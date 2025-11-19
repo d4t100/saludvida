@@ -8,7 +8,12 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Q
 
 def index(request):
-    return render(request, 'index.html')
+    context = {}
+    if request.user.is_authenticated:
+        context['total_medicos'] = Medico.objects.count()
+        context['total_pacientes'] = Paciente.objects.count()
+        context['total_citas'] = Cita.objects.count()
+    return render(request, 'index.html', context)
 
 def login_view(request):
     if request.method == 'POST':
@@ -112,7 +117,7 @@ def paciente_delete(request, pk):
 # CITAS
 @login_required
 def cita_list(request):
-    qs = Cita.objects.select_related('paciente','medico').all().order_by('-fecha_cita','hora_cita')
+    qs = Cita.objects.select_related('paciente','medico').all().order_by('-fecha_cita','-hora_cita')
     # filtros GET
     medico_id = request.GET.get('medico')
     paciente_id = request.GET.get('paciente')

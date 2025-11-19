@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Citas Médicas - SaludVida{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card fade-in">
+        <div class="card-header">
+            <h1 class="card-title">
+                <i class="fas fa-calendar-check"></i>
+                Gestión de Citas Médicas
+            </h1>
+            <a href="{% url 'cita_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Nueva Cita
+            </a>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <form method="get" action="">
+                <div class="filter-grid">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="medico" class="form-label">
+                            <i class="fas fa-user-md"></i> Médico
+                        </label>
+                        <select name="medico" id="medico" class="form-control">
+                            <option value="">Todos los médicos</option>
+                            {% for medico in medicos %}
+                                <option value="{{ medico.id }}" {% if request.GET.medico == medico.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ medico.nombre_completo }} - {{ medico.especialidad }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="paciente" class="form-label">
+                            <i class="fas fa-user-injured"></i> Paciente
+                        </label>
+                        <select name="paciente" id="paciente" class="form-control">
+                            <option value="">Todos los pacientes</option>
+                            {% for paciente in pacientes %}
+                                <option value="{{ paciente.id }}" {% if request.GET.paciente == paciente.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ paciente.nombre_completo }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="fecha" class="form-label">
+                            <i class="fas fa-calendar"></i> Fecha
+                        </label>
+                        <input type="date" name="fecha" id="fecha" class="form-control" value="{{ request.GET.fecha }}">
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; align-items: end;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                        <a href="{% url 'cita_list' %}" class="btn btn-danger">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <input type="text" id="tableSearch" class="form-control" placeholder="🔍 Buscar en la tabla...">
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> ID</th>
+                        <th><i class="fas fa-user-injured"></i> Paciente</th>
+                        <th><i class="fas fa-user-md"></i> Médico</th>
+                        <th><i class="fas fa-stethoscope"></i> Especialidad</th>
+                        <th><i class="fas fa-calendar"></i> Fecha</th>
+                        <th><i class="fas fa-clock"></i> Hora</th>
+                        <th><i class="fas fa-file-alt"></i> Observaciones</th>
+                        <th><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cita in citas %}
+                    <tr>
+                        <td>{{ cita.id }}</td>
+                        <td>
+                            <strong>{{ cita.paciente.nombre_completo }}</strong>
+                            <br>
+                            <small style="color: var(--text);">{{ cita.paciente.rut }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ cita.medico.nombre_completo }}</strong>
+                            <br>
+                            <small style="color: var(--text);">{{ cita.medico.correo }}</small>
+                        </td>
+                        <td>
+                            <span style="background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem;">
+                                {{ cita.especialidad }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-calendar-day"></i>
+                                {{ cita.fecha_cita|date:"d/m/Y" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-clock"></i>
+                                {{ cita.hora_cita|time:"H:i" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if cita.observaciones %}
+                                <span title="{{ cita.observaciones }}">
+                                    {{ cita.observaciones|truncatewords:5 }}
+                                </span>
+                            {% else %}
+                                <span style="color: var(--text); opacity: 0.5;">Sin observaciones</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{% url 'cita_edit' cita.pk %}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'cita_delete' cita.pk %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text);">
+                            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem;"></i>
+                            No hay citas registradas
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text);">
+            <i class="fas fa-info-circle"></i> 
+            Total de citas: <strong>{{ citas|length }}</strong>
+        </div>
+    </div>
+</div>
+{% endblock %}
